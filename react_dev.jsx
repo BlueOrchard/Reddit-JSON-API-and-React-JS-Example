@@ -11,15 +11,21 @@ class IndividualPost extends React.Component{
 }
 
 class PostList extends React.Component{
+    page;
+    prev;
+    next;
+
     constructor(props){
         super(props);
 
-        this.checkState = this.checkState.bind(this);
+        this.prevPage = this.prevPage.bind(this);
+        this.nextPage = this.nextPage.bind(this);
+
+        this.prev = null;
+        this.next = null;
+        this.page = null;
 
         this.state = {
-            page: null,
-            prev: null;
-            next: null,
             list: []
         };
     }
@@ -29,14 +35,15 @@ class PostList extends React.Component{
     }
     
     redditList(){
-        return $.getJSON('https://www.reddit.com/r/pics/.json?limit=25&after=' + this.state.page)
+        console.log('https://www.reddit.com/r/pics/.json?limit=25&after=' + this.page);
+        return $.getJSON('https://www.reddit.com/r/pics/.json?limit=25&after=' + this.page)
             .then((data) => {
-                this.setState({list : data.data.children})
+                this.prev = data.data.before,
+                this.next = data.data.after,
+                this.setState({
+                    list : data.data.children
+                })
             });
-    }
-
-    checkState(){
-        console.log(this.state.list);
     }
 
     listEach(data, i){
@@ -44,18 +51,24 @@ class PostList extends React.Component{
         return(<IndividualPost data={finalData} key={i} index={i} />)
     }
 
-    prev(){
-
+    prevPage(){
+        console.log(this.prev);
+        if(this.prev){
+            this.page = this.prev;
+            this.redditList();
+        }
     }
 
-    next(){
-
+    nextPage(){
+        if(this.next){
+            this.page = this.next;
+            this.redditList();
+        }
     }
 
     render(){
         return <div>
-                    <button onClick={this.prev}>Previous</button>
-                    <button onClick={this.next}>Next</button>
+                    <button onClick={this.nextPage}>Next</button>
                     {this.state.list.map(this.listEach)}
                </div>;
     }
